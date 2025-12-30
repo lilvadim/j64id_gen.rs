@@ -1,16 +1,14 @@
 use rand::prelude::*;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-pub trait IdGen<T> {
-    fn next(&mut self) -> T;
-}
-
+#[allow(dead_code)]
 pub struct J64IdGen {
     rand_seed_cnt: u16,
     timestamp_cnt: u64,
 }
 
-impl IdGen<u64> for J64IdGen {
+#[allow(dead_code)]
+impl J64IdGen {
     fn next(&mut self) -> u64 {
         self.rand_seed_cnt = self.rand_seed_cnt.overflowing_add(1).0;
         self.timestamp_cnt = u64::max(unix_timestamp(), self.timestamp_cnt + 1);
@@ -67,7 +65,7 @@ mod tests {
         });
     }
 
-    fn assert_all_unique_thread(id_gen: Arc<Mutex<impl IdGen<u64>>>) {
+    fn assert_all_unique_thread(id_gen: Arc<Mutex<J64IdGen>>) {
         let id_vec: Vec<u64> = (0..10_000_000)
             .map(|_| id_gen.lock().unwrap().next())
             .collect();
@@ -78,7 +76,7 @@ mod tests {
         assert!(id_cnt.values().all(|cnt| *cnt == 1))
     }
 
-    fn assert_all_unique(id_gen: &mut impl IdGen<u64>) {
+    fn assert_all_unique(id_gen: &mut J64IdGen) {
         let id_vec: Vec<u64> = (0..10_000_000).map(|_| id_gen.next()).collect();
         let mut id_cnt = HashMap::<u64, u64>::new();
         for id in id_vec {
